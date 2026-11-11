@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1324">
+<meta name="description" content="Private, browser-only PDF page extraction with password support.">
+<title>PDF Page Extractor</title>
+<style>
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#182336;background:#f2f5fa}
+*{box-sizing:border-box}body{margin:0;line-height:1.5}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
+.hero{background:linear-gradient(135deg,#0b1324,#1b3561);color:white;padding:40px 20px 66px}.shell{max-width:820px;margin:0 auto}.topline{font-weight:700;letter-spacing:.12em;font-size:.73rem;color:#bfd1fc;text-transform:uppercase}
+h1{font-size:clamp(1.85rem,5vw,2.8rem);letter-spacing:-.045em;line-height:1.12;margin:16px 0 10px}.hero p{color:#d0d9e7;max-width:680px;margin:0}
+.pill{display:inline-flex;gap:7px;align-items:center;border:1px solid #607698;border-radius:999px;padding:5px 12px;font-size:.83rem;margin-top:20px;color:#f0f5fd}
+.main{margin:-33px auto 45px;padding:0 20px}.panel{background:#fff;border:1px solid #e0e7f0;border-radius:16px;box-shadow:0 10px 36px #0e24411a;padding:clamp(19px,4vw,33px)}
+.step{display:flex;align-items:center;gap:10px;margin:0 0 14px}.num{background:#eaf0fc;color:#244da9;width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-weight:750;font-size:.88rem}
+h2{font-size:1.12rem;margin:0;letter-spacing:-.02em}.small{font-size:.9rem;color:#617086;margin:4px 0 14px}
+.drop{display:block;border:2px dashed #a7b9d5;background:#f8fbff;border-radius:13px;padding:28px 20px;text-align:center;transition:.15s;cursor:pointer}
+.drop:hover,.drop.drag{background:#eef5ff;border-color:#3265c1}.drop strong{display:block;font-size:1rem}.drop span{font-size:.86rem;color:#69788e}.drop input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.filemeta{background:#eff6ff;color:#21437c;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.89rem;overflow-wrap:anywhere}
+.section{margin-top:29px;padding-top:27px;border-top:1px solid #e8edf4}label.field{display:block;font-size:.91rem;font-weight:650;margin-bottom:7px}
+input[type=text],input[type=password]{width:100%;border:1px solid #b7c5d8;border-radius:10px;padding:12px 13px;color:#15233c;background:#fff;outline:0}
+input:focus{border-color:#3563c4;box-shadow:0 0 0 3px #3d71d51c}.inline{display:flex;gap:9px;flex-wrap:wrap}.inline>input{flex:1;min-width:160px}
+.btn{background:#244daf;color:white;border:1px solid #244daf;border-radius:10px;padding:12px 19px;font-weight:700}.btn:hover:enabled{background:#173d96}
+.secondary{background:white;border:1px solid #c3d0e0;color:#28446e}.secondary:hover:enabled{background:#f3f7fe}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.chip{border:1px solid #cad5e6;background:#fff;color:#3c526d;padding:6px 10px;font-size:.84rem;border-radius:7px}.chip:hover:enabled{border-color:#3154b2;background:#f3f7fe}
+.note{font-size:.82rem;color:#68768a;margin-top:9px}.toggle{display:flex;gap:10px;align-items:center;font-size:.91rem;cursor:pointer}.toggle input{width:18px;height:18px;accent-color:#254eb0}
+.actions{margin-top:28px}.primary{width:100%;font-size:1rem;padding:15px 20px}.status{min-height:25px;font-size:.92rem;margin-top:13px}.status.error{color:#b3282c}.status.success{color:#147145}
+[hidden]{display:none!important}.footer{font-size:.8rem;color:#6b788b;margin-top:20px;text-align:center;line-height:1.7}
+@media(max-width:520px){.hero{padding-top:30px}.main{padding:0 13px}.panel{padding:21px 17px}.inline .btn{width:100%}}
+</style>
+</head>
+<body>
+<header class="hero"><div class="shell"><div class="topline">Personal PDF tools</div><h1>PDF Page Extractor</h1>
+<p>Keep exactly the pages you need, in your preferred order. Works with password-protected PDFs and runs entirely on your device.</p>
+<span class="pill">🔒 Private · No file uploads · No account</span></div></header>
+<main class="shell main"><div class="panel">
+<section aria-labelledby="step1">
+<div class="step"><span class="num">1</span><h2 id="step1">Choose your PDF</h2></div>
+<label class="drop" id="dropZone" for="pdfFile"><strong>Click to choose a PDF or drop it here</strong>
+<span>PDF files only · Processing stays in this browser</span><input id="pdfFile" type="file" accept="application/pdf,.pdf"></label>
+<div id="fileInfo" class="filemeta" hidden></div>
+<div id="unlockPanel" hidden style="margin-top:16px"><label class="field" for="sourcePassword">This PDF is password protected</label>
+<div class="inline"><input id="sourcePassword" type="password" autocomplete="off" placeholder="Enter the PDF's password">
+<button id="unlockBtn" class="btn secondary" type="button">Unlock PDF</button></div>
+<div class="note">The password is used only on your device and is never stored or transmitted.</div></div>
+</section>
+<section class="section" aria-labelledby="step2">
+<div class="step"><span class="num">2</span><h2 id="step2">Select pages</h2></div>
+<div class="small" id="pageSummary">Choose a PDF to see its page count.</div>
+<label class="field" for="pageRanges">Pages to keep, in the order you want</label>
+<input id="pageRanges" type="text" placeholder="e.g. 1-3, 5, 8-10" disabled spellcheck="false">
+<div class="chips">
+<button class="chip" data-preset="all" type="button" disabled>All pages</button>
+<button class="chip" data-preset="odd" type="button" disabled>Odd pages</button>
+<button class="chip" data-preset="even" type="button" disabled>Even pages</button>
+<button class="chip" data-preset="last" type="button" disabled>Last page</button></div>
+<div class="note">For example, <b>7, 2-4, 7</b> produces five pages in that exact order. Duplicates are allowed.</div>
+<div id="selectionInfo" class="note" aria-live="polite"></div></section>
+<section class="section" aria-labelledby="step3">
+<div class="step"><span class="num">3</span><h2 id="step3">Output options</h2></div>
+<label class="field" for="outputName">Output filename</label>
+<input id="outputName" type="text" value="extracted-pages.pdf" maxlength="180" spellcheck="false">
+<div style="margin-top:17px"><label class="toggle"><input id="protectOutput" type="checkbox"><span>Password-protect the new PDF (AES-256)</span></label></div>
+<div id="outputPasswordArea" style="margin-top:12px" hidden>
+<label class="field" for="outputPassword">New PDF password</label>
+<input id="outputPassword" type="password" autocomplete="new-password" placeholder="Choose a password (at least 6 characters)"></div></section>
+<div class="actions"><button class="btn primary" id="extractBtn" type="button" disabled>Extract and download PDF</button>
+<div class="status" id="status" role="status" aria-live="polite"></div></div></div>
+<div class="footer">Your PDF and passwords stay in your browser, not on GitHub. Browser-based MuPDF.js (AGPL-3.0-or-later).<br>
+<a href="https://github.com/davidmahk-afk/pdf-extractor" rel="noopener noreferrer">Open source on GitHub</a> · PDFs are not uploaded.</div></main>
+<script type="module" src="./app.js"></script>
+</body></html>
