@@ -35,6 +35,10 @@ jobs:
           cp node_modules/mupdf/dist/mupdf-wasm.js _site/vendor/
           cp node_modules/mupdf/dist/mupdf-wasm.wasm _site/vendor/
           touch _site/.nojekyll
+      - name: Install Chromium for browser testing
+        run: npx playwright install chromium --with-deps
+      - name: Smoke test browser PDF upload and extraction
+        run: node tests/browser-smoke.mjs
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
