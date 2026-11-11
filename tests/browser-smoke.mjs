@@ -3,7 +3,7 @@ import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import http from 'node:http';
 import * as mupdf from 'mupdf';
-import { chromium } from 'playwright';
+import { chromium, webkit } from 'playwright';
 
 const siteRoot = path.resolve('_site');
 const mimeTypes = { '.html':'text/html', '.js':'text/javascript', '.wasm':'application/wasm', '.css':'text/css' };
@@ -41,7 +41,7 @@ let browser;
 const diagnostics=[];
 try {
   const port=server.address().port;
-  browser=await chromium.launch({ headless:true });
+  browser=await (process.argv.includes('--webkit') ? webkit : chromium).launch({ headless:true });
   const page=await browser.newPage({ acceptDownloads:true });
   page.on('console', message => { if(message.type() === 'error') diagnostics.push('Console: '+message.text()); });
   page.on('pageerror', err => diagnostics.push('Page: '+err.stack));
@@ -49,7 +49,10 @@ try {
   await page.goto(`http://127.0.0.1:${port}/`, { waitUntil:'networkidle' });
   assert.equal(await page.title(), 'PDF Page Extractor');
   const fixture=createFixture();
-  await page.locator('#pdfFile').setInputFiles({name:'smoke.pdf',mimeType:'application/pdf',buffer:fixture});
+  const pickerPromise=page.waitForEvent('filechooser');
+  await page.locator('#dropZone').click({position:{x:22,y:24}});
+  const picker=await pickerPromise;
+  await picker.setFiles({name:'smoke.pdf',mimeType:'application/pdf',buffer:fixture});
   await page.waitForTimeout(1200);
   const status=await page.locator('#status').innerText();
   console.log('Unencrypted PDF status:',status);
@@ -69,7 +72,7 @@ try {
       const b=p.getBounds();assert.equal(Math.round(b[2]-b[0]),400);
     } finally {p.destroy();}
   } finally {output.destroy();}
-  console.log('Unencrypted upload, reorder and download: PASS');
+  console.log((process.argv.includes('--webkit') ? 'WebKit' : 'Chromium')+' file picker, upload, reorder and download: PASS');
   await page.locator('#pdfFile').setInputFiles({name:'locked.pdf',mimeType:'application/pdf',buffer:createFixture(true)});
   await page.waitForTimeout(200);
   assert.equal(await page.locator('#unlockPanel').isVisible(),true);
