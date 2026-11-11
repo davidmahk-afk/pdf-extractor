@@ -49,8 +49,12 @@ test('AES-256 protected PDF requires the correct password', () => {
       assert.equal(locked.needsPassword(), true);
       assert.equal(locked.authenticatePassword('incorrect'), 0);
       assert.ok(locked.authenticatePassword('example123'));
-      assert.equal(locked.needsPassword(), false);
       assert.equal(locked.countPages(), 1);
+      const extracted = new mupdf.PDFDocument();
+      try {
+        extracted.graftPage(-1, locked, 0);
+        assert.equal(extracted.countPages(), 1);
+      } finally { extracted.destroy(); }
     } finally { locked.destroy(); }
   } finally {
     if (buf) buf.destroy();
