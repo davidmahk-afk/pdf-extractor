@@ -1,0 +1,46 @@
+name: Publish PDF Extractor to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install PDF engine
+        run: npm install --no-audit --no-fund
+      - name: Test page-selection parser
+        run: npm test
+      - name: Assemble static site
+        run: |
+          mkdir -p _site/vendor
+          cp index.html app.js page-ranges.js _site/
+          cp node_modules/mupdf/dist/mupdf.js _site/vendor/
+          cp node_modules/mupdf/dist/mupdf-wasm.js _site/vendor/
+          cp node_modules/mupdf/dist/mupdf-wasm.wasm _site/vendor/
+          touch _site/.nojekyll
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
