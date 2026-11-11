@@ -165,3 +165,4 @@ ui.drop.addEventListener('drop', event => {
   loadFile(event.dataTransfer.files?.[0]);
 });
 setEnabled();
+setStatus('Ready — select a PDF file or drag it into the box.');
