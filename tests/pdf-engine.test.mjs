@@ -7,9 +7,9 @@ test('extract pages with the original PDF content retained', () => {
   const output = new mupdf.PDFDocument();
   let buf;
   try {
-    src.newPage(-1, 200, 300);
-    src.newPage(-1, 300, 450);
-    src.newPage(-1, 400, 600);
+    src.insertPage(-1, src.addPage([0, 0, 200, 300], 0, src.newDictionary(), ''));
+    src.insertPage(-1, src.addPage([0, 0, 300, 450], 0, src.newDictionary(), ''));
+    src.insertPage(-1, src.addPage([0, 0, 400, 600], 0, src.newDictionary(), ''));
     assert.equal(src.countPages(), 3);
     output.graftPage(-1, src, 2);
     output.graftPage(-1, src, 0);
@@ -38,7 +38,7 @@ test('AES-256 protected PDF requires the correct password', () => {
   const src = new mupdf.PDFDocument();
   let buf;
   try {
-    src.newPage(-1, 210, 297);
+    src.insertPage(-1, src.addPage([0, 0, 210, 297], 0, src.newDictionary(), ''));
     buf = src.saveToBuffer(JSON.stringify({
       garbage:true,compress:true,encrypt:'aes-256',
       'user-password':'example123',
