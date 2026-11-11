@@ -12,19 +12,20 @@ const ui = {
 let documentPdf = null;
 let selectedFile = null;
 let isWorking = false;
+let isUnlocked = false;
 
 function setStatus(message, type = '') {
   ui.status.textContent = message;
   ui.status.className = `status ${type}`;
 }
 function activeDocument() {
-  return documentPdf !== null && !documentPdf.needsPassword();
+  return documentPdf !== null && isUnlocked;
 }
 function setEnabled() {
   const ready = activeDocument() && !isWorking;
   ui.ranges.disabled = !ready;
   ui.extract.disabled = !ready;
-  ui.unlockBtn.disabled = !documentPdf || !documentPdf.needsPassword() || isWorking;
+  ui.unlockBtn.disabled = !documentPdf || isUnlocked || isWorking;
   document.querySelectorAll('[data-preset]').forEach(btn => { btn.disabled = !ready; });
 }
 function updateSelection() {
@@ -41,6 +42,7 @@ function updateSelection() {
 function clearDocument() {
   if (documentPdf) { try { documentPdf.destroy(); } catch (_) {} }
   documentPdf = null;
+  isUnlocked = false;
   selectedFile = null;
   ui.fileInfo.hidden = true;
   ui.unlockPanel.hidden = true;
@@ -80,6 +82,7 @@ async function loadFile(file) {
       setStatus('Password required to open this PDF.');
       ui.sourcePassword.focus();
     } else {
+      isUnlocked = true;
       showReady();
     }
   } catch (err) {
@@ -88,12 +91,13 @@ async function loadFile(file) {
   } finally { isWorking = false; setEnabled(); }
 }
 function unlock() {
-  if (!documentPdf || !documentPdf.needsPassword()) return;
+  if (!documentPdf || isUnlocked) return;
   try {
     const password = ui.sourcePassword.value;
     if (!password) { setStatus('Enter the PDF password.', 'error'); return; }
     const result = documentPdf.authenticatePassword(password);
-    if (!result || documentPdf.needsPassword()) { setStatus('Incorrect password. Please try again.', 'error'); return; }
+    if (!result) { setStatus('Incorrect password. Please try again.', 'error'); return; }
+    isUnlocked = true;
     showReady();
   } catch (err) { setStatus(`Unable to unlock PDF: ${err.message}`, 'error'); }
 }
