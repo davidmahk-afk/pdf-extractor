@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "mupdf": "1.28.6"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
   }
 }
